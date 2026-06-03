@@ -1,0 +1,453 @@
+/* Base Reset */
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+:root {
+    --bg-primary: hsl(224, 64%, 6%);
+    --bg-gradient: radial-gradient(circle at center, hsl(222, 47%, 12%) 0%, hsl(224, 64%, 5%) 100%);
+    --card-bg: rgba(255, 255, 255, 0.02);
+    --card-border: rgba(255, 255, 255, 0.07);
+    --card-border-hover: rgba(6, 182, 212, 0.2);
+
+    --text-primary: #ffffff;
+    --text-secondary: #94a3b8;
+
+    --btn-secondary-border: rgba(255, 255, 255, 0.15);
+    --btn-secondary-bg-hover: rgba(255, 255, 255, 0.05);
+    --btn-gradient: linear-gradient(135deg, #059669 0%, #06b6d4 100%);
+    --btn-glow: rgba(6, 182, 212, 0.3);
+
+    --font-heading: 'Outfit', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    --font-body: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+
+    /* Variáveis do mouse atualizadas via JS */
+    --mouse-x: 0;
+    --mouse-y: 0;
+}
+
+body {
+    background: var(--bg-primary);
+    background-image: var(--bg-gradient);
+    color: var(--text-primary);
+    font-family: var(--font-body);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow-x: hidden;
+}
+
+/* Page Container */
+.page-container {
+    width: 100%;
+    max-width: 1200px;
+    padding: 2rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* Glassmorphic Main Card */
+.glass-card {
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    backdrop-filter: blur(25px);
+    -webkit-backdrop-filter: blur(25px);
+    border-radius: 24px;
+    padding: 3.5rem 2.5rem;
+    width: 100%;
+    max-width: 480px;
+    text-align: center;
+    box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.7);
+    transition: border-color 0.4s ease, box-shadow 0.4s ease;
+}
+
+.glass-card:hover {
+    border-color: var(--card-border-hover);
+    box-shadow: 0 25px 50px -12px rgba(6, 182, 212, 0.15), 0 20px 40px -15px rgba(0, 0, 0, 0.7);
+}
+
+/* Typography */
+.title {
+    font-family: var(--font-heading);
+    font-size: 2.25rem;
+    font-weight: 800;
+    line-height: 1.25;
+    margin-bottom: 0.5rem;
+    background: linear-gradient(135deg, #ffffff 30%, #cbd5e1 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    letter-spacing: -0.02em;
+}
+
+.subtitle {
+    font-size: 1rem;
+    color: var(--text-secondary);
+    line-height: 1.6;
+    margin-bottom: 2.5rem;
+    font-weight: 300;
+}
+
+.subtitle strong {
+    color: #06b6d4;
+    font-weight: 600;
+}
+
+/* Container de Perspectiva 3D */
+.pack-wrapper {
+    position: relative;
+    width: 100%;
+    max-width: 300px;
+    aspect-ratio: 0.75;
+    margin: 0 auto 3rem;
+    perspective: 1200px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+/* Pacote Interativo 3D */
+.interactive-pack {
+    position: relative;
+    width: 230px;
+    height: 320px;
+    transform-style: preserve-3d;
+    /* Movimento e rotação controlados pelas variáveis do mouse */
+    transform: translate(calc(var(--mouse-x) * 55px), calc(var(--mouse-y) * 55px)) rotateX(calc(var(--mouse-y) * -35deg)) rotateY(calc(var(--mouse-x) * 35deg));
+    transition: transform 0.25s cubic-bezier(0.25, 0.8, 0.25, 1);
+    z-index: 2;
+    cursor: pointer;
+}
+
+/* Canvas para Desenho do Corte (Fica por cima do pacote) */
+.slash-canvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 15;
+    pointer-events: none;
+    transition: opacity 0.15s ease;
+}
+
+/* Visual do Pacote Completo */
+.pack-visual {
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 3;
+    opacity: 1;
+    transition: opacity 0.1s ease;
+}
+
+/* Imagem do Pacote */
+.pack-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 12px;
+    filter: drop-shadow(0 15px 30px rgba(0, 0, 0, 0.5));
+    animation: floatPack 4s ease-in-out infinite;
+    user-select: none;
+    -webkit-user-drag: none;
+}
+
+/* Animação do Pacote Flutuando */
+@keyframes floatPack {
+    0% {
+        transform: translateY(0px) rotateZ(0deg);
+    }
+
+    50% {
+        transform: translateY(-12px) rotateZ(1deg);
+    }
+
+    100% {
+        transform: translateY(0px) rotateZ(0deg);
+    }
+}
+
+/* Metades do pacote para a animação do corte */
+.pack-half {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 4;
+    opacity: 0;
+    pointer-events: none;
+    overflow: hidden;
+}
+
+.pack-image-half {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    user-select: none;
+    -webkit-user-drag: none;
+}
+
+/* Recorte da Metade Esquerda */
+.pack-half.left {
+    clip-path: polygon(0 0, 50% 0, 50% 100%, 0 100%);
+}
+
+/* Recorte da Metade Direita */
+.pack-half.right {
+    clip-path: polygon(50% 0, 100% 0, 100% 100%, 50% 100%);
+}
+
+/* Flash de Luz Branca no Impacto do Corte */
+.interactive-pack::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: #ffffff;
+    border-radius: 12px;
+    opacity: 0;
+    pointer-events: none;
+    z-index: 12;
+}
+
+/* Estado Durante o Corte (Glow, Flash e separação física) */
+.interactive-pack.animate-cut .pack-visual {
+    opacity: 0;
+    pointer-events: none;
+}
+
+.interactive-pack.animate-cut::after {
+    animation: cutFlash 0.4s ease-out forwards;
+}
+
+.interactive-pack.animate-cut .pack-half {
+    opacity: 1;
+}
+
+.interactive-pack.animate-cut .pack-half.left {
+    animation: cutLeft 0.8s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+}
+
+.interactive-pack.animate-cut .pack-half.right {
+    animation: cutRight 0.8s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+}
+
+/* Animações das Metades Se Separando */
+@keyframes cutLeft {
+    0% {
+        transform: translate(0, 0) rotate(0deg);
+        opacity: 1;
+    }
+
+    30% {
+        filter: brightness(2) contrast(1.5);
+    }
+
+    100% {
+        transform: translate(-180px, 80px) rotate(-35deg);
+        opacity: 0;
+        filter: brightness(2) blur(3px);
+    }
+}
+
+@keyframes cutRight {
+    0% {
+        transform: translate(0, 0) rotate(0deg);
+        opacity: 1;
+    }
+
+    30% {
+        filter: brightness(2) contrast(1.5);
+    }
+
+    100% {
+        transform: translate(180px, -80px) rotate(35deg);
+        opacity: 0;
+        filter: brightness(2) blur(3px);
+    }
+}
+
+@keyframes cutFlash {
+    0% {
+        opacity: 0;
+    }
+
+    20% {
+        opacity: 1;
+        filter: blur(2px);
+    }
+
+    100% {
+        opacity: 0;
+    }
+}
+
+/* Wrapper da Sombra para rastrear o mouse */
+.pack-shadow-wrapper {
+    position: absolute;
+    bottom: -25px;
+    width: 180px;
+    height: 15px;
+    transform: translate(calc(var(--mouse-x) * 45px), calc(var(--mouse-y) * 12px));
+    transition: transform 0.25s cubic-bezier(0.25, 0.8, 0.25, 1), opacity 0.3s ease;
+    z-index: 1;
+    pointer-events: none;
+}
+
+.pack-shadow {
+    width: 100%;
+    height: 100%;
+    background: radial-gradient(ellipse at center, rgba(0, 0, 0, 0.75) 0%, rgba(0, 0, 0, 0) 75%);
+    filter: blur(5px);
+    animation: floatShadow 4s ease-in-out infinite;
+}
+
+@keyframes floatShadow {
+    0% {
+        transform: scale(0.85);
+        opacity: 0.65;
+        filter: blur(4px);
+    }
+
+    50% {
+        transform: scale(1.05);
+        opacity: 0.35;
+        filter: blur(7px);
+    }
+
+    100% {
+        transform: scale(0.85);
+        opacity: 0.65;
+        filter: blur(4px);
+    }
+}
+
+/* Carta Revelada (Inicia oculta e virada ao contrário em 3D) */
+.revealed-card {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 220px;
+    height: 310px;
+    /* Centraliza e aplica escala/rotação inicial */
+    transform: translate(-50%, -50%) scale(0.4) rotateY(180deg);
+    opacity: 0;
+    z-index: 5;
+    pointer-events: none;
+    transition: transform 0.9s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.4s ease;
+    transform-style: preserve-3d;
+}
+
+/* Efeito de Explosão de Luz atrás da carta */
+.card-glow-burst {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 320px;
+    height: 320px;
+    transform: translate(-50%, -50%) scale(0.4);
+    background: radial-gradient(circle, rgba(6, 182, 212, 0.45) 0%, transparent 70%);
+    z-index: -1;
+    opacity: 0;
+    transition: transform 1.2s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.8s ease;
+}
+
+.card-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 14px;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.1);
+    backface-visibility: visible;
+}
+
+/* Transição de Surgimento da Carta (Ativada via JS) */
+.revealed-card.revealed {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1) rotateY(0deg);
+    pointer-events: auto;
+}
+
+.revealed-card.revealed .card-glow-burst {
+    transform: translate(-50%, -50%) scale(1.3);
+    opacity: 1;
+}
+
+/* Efeito Hover na Carta Revelada */
+.revealed-card.revealed:hover {
+    transform: translate(-50%, -54%) scale(1.06) rotateY(2deg);
+    box-shadow: 0 25px 50px rgba(6, 182, 212, 0.35);
+    cursor: pointer;
+}
+
+/* Button & Action Styling */
+.action-container {
+    display: flex;
+    justify-content: center;
+    margin-top: 1rem;
+    opacity: 0;
+    transition: opacity 0.4s ease;
+}
+
+.action-container.fade-in {
+    opacity: 1;
+}
+
+.premium-button {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.9rem 2.2rem;
+    font-family: var(--font-heading);
+    font-size: 1.05rem;
+    font-weight: 600;
+    color: #ffffff;
+    text-decoration: none;
+    background: var(--btn-gradient);
+    border-radius: 50px;
+    border: none;
+    cursor: pointer;
+    box-shadow: 0 4px 20px var(--btn-glow), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.premium-button:hover {
+    transform: translateY(-2px) scale(1.02);
+    box-shadow: 0 6px 22px var(--btn-glow);
+}
+
+.premium-button:active {
+    transform: translateY(0) scale(0.98);
+}
+
+/* Links de Navegação e Rodapé */
+.navigation-container {
+    margin-top: 2rem;
+}
+
+.link-back {
+    font-family: var(--font-heading);
+    font-size: 0.95rem;
+    color: var(--text-secondary);
+    text-decoration: none;
+    border-bottom: 1px dashed rgba(255, 255, 255, 0.2);
+    padding-bottom: 2px;
+    transition: all 0.3s ease;
+}
+
+.link-back:hover {
+    color: #ffffff;
+    border-color: #06b6d4;
+}
