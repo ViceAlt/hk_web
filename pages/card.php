@@ -17,7 +17,10 @@
 </head>
 
 <body>
-    <main class="page-container">
+    <!-- Canvas para desenhar o corte (Fullscreen) -->
+    <canvas id="slash-canvas" class="slash-canvas" style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 9000; pointer-events: none;"></canvas>
+
+    <main class="page-container" id="slash-area">
         <div class="glass-card" id="main-glass-card">
             <h1 class="title" id="page-title">Abrir Pacote</h1>
             <p class="subtitle" id="page-subtitle">Segure o <strong>botão esquerdo do mouse</strong> e arraste para
@@ -26,9 +29,6 @@
             <div class="pack-wrapper" id="pack-wrapper">
                 <!-- Pacote principal -->
                 <div class="interactive-pack" id="foil-pack">
-                    <!-- Canvas para desenhar o corte -->
-                    <canvas id="slash-canvas" class="slash-canvas" width="400" height="320"></canvas>
-
                     <!-- Imagem do pacote inteiro -->
                     <div class="pack-visual" id="pack-visual">
                         <img src="../template/pack.webp" alt="Pacote de Figurinhas" class="pack-image" id="pack-img"
@@ -72,6 +72,15 @@
             const actionContainer = document.getElementById('action-container');
             const pageTitle = document.getElementById('page-title');
             const pageSubtitle = document.getElementById('page-subtitle');
+            const slashArea = document.getElementById('slash-area');
+
+            // Resize canvas to full screen
+            function resizeCanvas() {
+                canvas.width = window.innerWidth;
+                canvas.height = window.innerHeight;
+            }
+            window.addEventListener('resize', resizeCanvas);
+            resizeCanvas();
 
             let isDrawing = false;
             let points = [];
@@ -100,7 +109,8 @@
             });
 
             // Iniciar o rastro de corte
-            foilPack.addEventListener('mousedown', (e) => {
+            slashArea.addEventListener('mousedown', (e) => {
+                if (e.target.closest('button') || e.target.closest('a')) return;
                 if (isCutTriggered) return;
                 // Botão esquerdo = 0
                 if (e.button === 0) {
@@ -108,11 +118,7 @@
                     points = [];
                     canvas.style.opacity = '1';
 
-                    const rect = foilPack.getBoundingClientRect();
-                    const startX = e.clientX - rect.left;
-                    const startY = e.clientY - rect.top;
-
-                    points.push({ x: startX, y: startY });
+                    points.push({ x: e.clientX, y: e.clientY });
                 }
             });
 
@@ -120,11 +126,7 @@
             document.addEventListener('mousemove', (e) => {
                 if (!isDrawing || isCutTriggered) return;
 
-                const rect = foilPack.getBoundingClientRect();
-                const x = e.clientX - rect.left;
-                const y = e.clientY - rect.top;
-
-                points.push({ x, y });
+                points.push({ x: e.clientX, y: e.clientY });
                 drawSlash();
             });
 
@@ -160,8 +162,8 @@
                 const swipeWidth = maxX - minX;
                 const swipeHeight = maxY - minY;
 
-                // Se cobrir mais de 65% de toda a largura ou altura, é considerado um corte de lado a lado
-                return (swipeWidth > w * 0.65) || (swipeHeight > h * 0.65);
+                // Considerando o tamanho da tela, 250px é um gesto suficiente para abrir o pacote
+                return (swipeWidth > 250) || (swipeHeight > 250);
             }
 
             function drawSlash() {

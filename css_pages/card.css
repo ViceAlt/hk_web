@@ -54,9 +54,8 @@ body {
 /* Container de Perspectiva 3D */
 .pack-wrapper {
     position: relative;
-    width: 100%;
-    max-width: 500px;
-    aspect-ratio: 1.2;
+    width: 400px;
+    height: 320px;
     margin: 0 auto 3rem;
     perspective: 1200px;
     display: flex;
@@ -113,6 +112,8 @@ body {
     animation: floatPack 4s ease-in-out infinite;
     user-select: none;
     -webkit-user-drag: none;
+    filter: drop-shadow(calc(var(--mouse-x) * -30px) calc(var(--mouse-y) * -30px) 25px rgba(0, 0, 0, 0.6));
+    transition: filter 0.25s cubic-bezier(0.25, 0.8, 0.25, 1);
 }
 
 /* Animação do Pacote Flutuando */
@@ -149,6 +150,8 @@ body {
     object-fit: contain;
     user-select: none;
     -webkit-user-drag: none;
+    filter: drop-shadow(calc(var(--mouse-x) * -30px) calc(var(--mouse-y) * -30px) 25px rgba(0, 0, 0, 0.6));
+    transition: filter 0.25s cubic-bezier(0.25, 0.8, 0.25, 1);
 }
 
 /* Recorte da Metade Esquerda */
@@ -269,6 +272,8 @@ body {
     object-fit: contain;
     border-radius: 14px;
     backface-visibility: visible;
+    filter: drop-shadow(calc(var(--mouse-x) * -30px) calc(var(--mouse-y) * -30px) 25px rgba(0, 0, 0, 0.6));
+    transition: filter 0.25s cubic-bezier(0.25, 0.8, 0.25, 1);
 }
 
 /* Transição de Surgimento da Carta (Ativada via JS) */
@@ -281,4 +286,20 @@ body {
 .revealed-card.revealed .card-glow-burst {
     transform: translate(-50%, -50%) scale(1.3);
     opacity: 1;
+}
+
+.action-container {
+    position: fixed;
+    bottom: 80px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 100;
+}
+
+.navigation-container {
+    position: fixed;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 100;
 }
