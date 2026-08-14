@@ -164,6 +164,16 @@ body {
     clip-path: polygon(50% 0, 100% 0, 100% 100%, 50% 100%);
 }
 
+/* Recorte da Metade Topo */
+.pack-half.top {
+    clip-path: polygon(0 0, 100% 0, 100% 50%, 0 50%);
+}
+
+/* Recorte da Metade Base */
+.pack-half.bottom {
+    clip-path: polygon(0 50%, 100% 50%, 100% 100%, 0 100%);
+}
+
 /* Flash de Luz Branca no Impacto do Corte */
 .interactive-pack::after {
     content: '';
@@ -180,25 +190,43 @@ body {
 }
 
 /* Estado Durante o Corte (Glow, Flash e separação física) */
-.interactive-pack.animate-cut .pack-visual {
+.interactive-pack.animate-cut-vertical .pack-visual,
+.interactive-pack.animate-cut-horizontal .pack-visual {
     opacity: 0;
     pointer-events: none;
 }
 
-.interactive-pack.animate-cut::after {
+.interactive-pack.animate-cut-vertical::after,
+.interactive-pack.animate-cut-horizontal::after {
     animation: cutFlash 0.4s ease-out forwards;
 }
 
-.interactive-pack.animate-cut .pack-half {
+/* Corte Vertical */
+.interactive-pack.animate-cut-vertical .pack-half.left,
+.interactive-pack.animate-cut-vertical .pack-half.right {
     opacity: 1;
 }
 
-.interactive-pack.animate-cut .pack-half.left {
+.interactive-pack.animate-cut-vertical .pack-half.left {
     animation: cutLeft 0.8s cubic-bezier(0.25, 1, 0.5, 1) forwards;
 }
 
-.interactive-pack.animate-cut .pack-half.right {
+.interactive-pack.animate-cut-vertical .pack-half.right {
     animation: cutRight 0.8s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+}
+
+/* Corte Horizontal */
+.interactive-pack.animate-cut-horizontal .pack-half.top,
+.interactive-pack.animate-cut-horizontal .pack-half.bottom {
+    opacity: 1;
+}
+
+.interactive-pack.animate-cut-horizontal .pack-half.top {
+    animation: cutTop 0.8s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+}
+
+.interactive-pack.animate-cut-horizontal .pack-half.bottom {
+    animation: cutBottom 0.8s cubic-bezier(0.25, 1, 0.5, 1) forwards;
 }
 
 /* Animações das Metades Se Separando */
@@ -231,6 +259,40 @@ body {
 
     100% {
         transform: translate(180px, -80px) rotate(35deg);
+        opacity: 0;
+        filter: brightness(2) blur(3px);
+    }
+}
+
+@keyframes cutTop {
+    0% {
+        transform: translate(0, 0) rotate(0deg);
+        opacity: 1;
+    }
+
+    30% {
+        filter: brightness(2) contrast(1.5);
+    }
+
+    100% {
+        transform: translate(-40px, -180px) rotate(-15deg);
+        opacity: 0;
+        filter: brightness(2) blur(3px);
+    }
+}
+
+@keyframes cutBottom {
+    0% {
+        transform: translate(0, 0) rotate(0deg);
+        opacity: 1;
+    }
+
+    30% {
+        filter: brightness(2) contrast(1.5);
+    }
+
+    100% {
+        transform: translate(40px, 180px) rotate(15deg);
         opacity: 0;
         filter: brightness(2) blur(3px);
     }
@@ -279,8 +341,29 @@ body {
 /* Transição de Surgimento da Carta (Ativada via JS) */
 .revealed-card.revealed {
     opacity: 1;
-    transform: translate(calc(-50% + var(--mouse-x) * 55px), calc(-50% + var(--mouse-y) * 55px)) rotateX(calc(var(--mouse-y) * -35deg)) rotateY(calc(var(--mouse-x) * 35deg)) scale(1);
     pointer-events: auto;
+}
+
+/* Sistema de Pilha para as Cartas */
+.stack-card {
+    transition: transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.4s ease, filter 0.6s ease;
+}
+
+.stack-card.revealed[data-stack="0"] {
+    transform: translate(calc(-50% + var(--mouse-x) * 55px), calc(-50% + var(--mouse-y) * 55px)) rotateX(calc(var(--mouse-y) * -35deg)) rotateY(calc(var(--mouse-x) * 35deg)) scale(1);
+    filter: brightness(1);
+}
+
+.stack-card.revealed[data-stack="1"] {
+    transform: translate(calc(-50% - 15px + var(--mouse-x) * 20px), calc(-50% + 7px + var(--mouse-y) * 20px)) scale(0.95);
+    filter: brightness(0.85);
+    pointer-events: none; /* Apenas a carta do topo pode ser clicada */
+}
+
+.stack-card.revealed[data-stack="2"] {
+    transform: translate(calc(-50% - 30px + var(--mouse-x) * 10px), calc(-50% + 15px + var(--mouse-y) * 10px)) scale(0.9);
+    filter: brightness(0.65);
+    pointer-events: none; /* Apenas a carta do topo pode ser clicada */
 }
 
 .revealed-card.revealed .card-glow-burst {

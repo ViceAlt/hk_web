@@ -14,6 +14,8 @@
         href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Plus+Jakarta+Sans:wght@300;400;600;700&display=swap"
         rel="stylesheet">
     <link rel="stylesheet" href="../css_pages/card.css">
+    <!-- Mudança: CSS do efeito de papel metalizado incluído -->
+    <link rel="stylesheet" href="../Effects/metal_card.css">
 </head>
 
 <body>
@@ -35,7 +37,7 @@
                             draggable="false">
                     </div>
 
-                    <!-- Metades recortadas (usadas na animação de corte) -->
+                    <!-- Metades recortadas (Corte Vertical) -->
                     <div class="pack-half left" id="pack-half-left">
                         <img src="../template/pack.webp" alt="Pacote Esquerdo" class="pack-image-half"
                             draggable="false">
@@ -43,12 +45,34 @@
                     <div class="pack-half right" id="pack-half-right">
                         <img src="../template/pack.webp" alt="Pacote Direito" class="pack-image-half" draggable="false">
                     </div>
+
+                    <!-- Metades recortadas (Corte Horizontal) -->
+                    <div class="pack-half top" id="pack-half-top">
+                        <img src="../template/pack.webp" alt="Pacote Topo" class="pack-image-half" draggable="false">
+                    </div>
+                    <div class="pack-half bottom" id="pack-half-bottom">
+                        <img src="../template/pack.webp" alt="Pacote Base" class="pack-image-half" draggable="false">
+                    </div>
                 </div>
 
-                <!-- Carta Revelada (oculta por baixo) -->
-                <div class="revealed-card" id="revealed-card">
-                    <div class="card-glow-burst"></div>
-                    <img src="../template/card.webp" alt="Carta Revelada" class="card-image" draggable="false">
+                <!-- Cartas Reveladas (ocultas por baixo) -->
+                <!-- Mudança: Todas as cartas agora têm a mesma estrutura interna para suportar o efeito metalizado aleatório -->
+                <div id="revealed-cards-container">
+                    <div class="revealed-card stack-card" data-stack="2" style="z-index: 5;">
+                        <div class="card-wrapper" style="width: 100%; height: 100%; max-width: none; margin: 0;">
+                            <img src="../template/card.webp" alt="Carta 3" class="card-image" draggable="false" style="max-width: none; width: 100%; height: 100%; object-fit: contain;">
+                        </div>
+                    </div>
+                    <div class="revealed-card stack-card" data-stack="1" style="z-index: 6;">
+                        <div class="card-wrapper" style="width: 100%; height: 100%; max-width: none; margin: 0;">
+                            <img src="../template/card.webp" alt="Carta 2" class="card-image" draggable="false" style="max-width: none; width: 100%; height: 100%; object-fit: contain;">
+                        </div>
+                    </div>
+                    <div class="revealed-card stack-card" data-stack="0" style="z-index: 7;">
+                        <div class="card-wrapper" style="width: 100%; height: 100%; max-width: none; margin: 0;">
+                            <img src="../template/card.webp" alt="Carta 1" class="card-image" draggable="false" style="max-width: none; width: 100%; height: 100%; object-fit: contain;">
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -67,7 +91,8 @@
             const foilPack = document.getElementById('foil-pack');
             const canvas = document.getElementById('slash-canvas');
             const ctx = canvas.getContext('2d');
-            const revealedCard = document.getElementById('revealed-card');
+            // Mudança: Selecionando as 3 cartas ao invés de 1
+            const revealedCards = document.querySelectorAll('.revealed-card');
             const btnReset = document.getElementById('btn-reset');
             const actionContainer = document.getElementById('action-container');
             const pageTitle = document.getElementById('page-title');
@@ -135,16 +160,17 @@
                 if (!isDrawing || isCutTriggered) return;
                 isDrawing = false;
 
-                if (isEdgeToEdge()) {
-                    triggerCut();
+                const cutResult = isEdgeToEdge();
+                if (cutResult.isCut) {
+                    triggerCut(cutResult.isHorizontal);
                 } else {
                     fadeSlash();
                 }
             });
 
-            // Lógica tolerante (sensível) para detectar corte de borda a borda
+            // Lógica tolerante (sensível) para detectar corte de borda a borda e direção
             function isEdgeToEdge() {
-                if (points.length < 3) return false;
+                if (points.length < 3) return { isCut: false };
 
                 const w = canvas.width;
                 const h = canvas.height;
@@ -163,7 +189,12 @@
                 const swipeHeight = maxY - minY;
 
                 // Considerando o tamanho da tela, 250px é um gesto suficiente para abrir o pacote
-                return (swipeWidth > 250) || (swipeHeight > 250);
+                if (swipeWidth > 250 || swipeHeight > 250) {
+                    // Direção baseada na maior variação de movimento (horizontal ou vertical)
+                    return { isCut: true, isHorizontal: swipeWidth > swipeHeight };
+                }
+                
+                return { isCut: false };
             }
 
             function drawSlash() {
@@ -211,18 +242,71 @@
                 fade();
             }
 
-            function triggerCut() {
+            function triggerCut(isHorizontal) {
                 isCutTriggered = true;
                 ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-                // Adiciona a classe de animação do corte
-                foilPack.classList.add('animate-cut');
+                // Adiciona a classe de animação do corte baseada na direção
+                if (isHorizontal) {
+                    foilPack.classList.add('animate-cut-horizontal');
+                } else {
+                    foilPack.classList.add('animate-cut-vertical');
+                }
 
-                // Revelação da carta
+                // Revelação das cartas
                 setTimeout(() => {
-                    revealedCard.classList.add('revealed');
+                    // Mudança: Escolhe aleatoriamente uma das 3 cartas para ser a metalizada neste pacote
+                    revealedCards.forEach(card => {
+                        const wrapper = card.querySelector('.card-wrapper');
+                        if (wrapper) wrapper.classList.remove('metal-card');
+                    });
+                    
+                    const randomIndex = Math.floor(Math.random() * revealedCards.length);
+                    const chosenWrapper = revealedCards[randomIndex].querySelector('.card-wrapper');
+                    if (chosenWrapper) chosenWrapper.classList.add('metal-card');
+
+                    // Mudança: Mostrar as 3 cartas e adicionar o evento de clique para jogá-las para fora
+                    revealedCards.forEach((card, index) => {
+                        card.classList.add('revealed');
+                        
+                        // Evento para jogar a carta para fora ao clicar
+                        card.onclick = function() {
+                            const direction = Math.random() > 0.5 ? 1 : -1; // Direita ou Esquerda
+                            
+                            // Mudança: Remove o drop-shadow instantaneamente para não projetar sombra nas cartas de baixo
+                            const img = this.querySelector('.card-image');
+                            if(img) {
+                                img.style.filter = 'none';
+                                img.style.transition = 'none'; // Remove delay da transição de filtro
+                            }
+
+                            this.style.transition = 'transform 0.8s cubic-bezier(0.25, 1, 0.5, 1), opacity 0.6s ease';
+                            this.style.transform = `translate(${direction * 800}px, -100px) rotate(${direction * 360}deg) scale(0.5)`;
+                            this.style.opacity = '0';
+                            this.style.pointerEvents = 'none'; // Evita múltiplos cliques
+                            
+                            // Mudança: Animar as cartas de trás para frente
+                            let currentStack = parseInt(this.getAttribute('data-stack'));
+                            this.removeAttribute('data-stack'); // Tira esta carta da lógica de pilha
+                            
+                            revealedCards.forEach(otherCard => {
+                                if (otherCard.hasAttribute('data-stack')) {
+                                    let otherStack = parseInt(otherCard.getAttribute('data-stack'));
+                                    if (otherStack > currentStack) {
+                                        let newStack = otherStack - 1;
+                                        otherCard.setAttribute('data-stack', newStack);
+                                        // Habilita clique na nova carta do topo
+                                        if (newStack === 0) {
+                                            otherCard.style.pointerEvents = 'auto';
+                                        }
+                                    }
+                                }
+                            });
+                        };
+                    });
+
                     pageTitle.textContent = "Pacote Aberto!";
-                    pageSubtitle.innerHTML = "Parabéns, você tirou uma carta incrível!";
+                    pageSubtitle.innerHTML = "Clique nas cartas para descartá-las!";
 
                     // Mostrar botão para abrir outro pacote
                     setTimeout(() => {
@@ -236,8 +320,26 @@
             if (btnReset) {
                 btnReset.addEventListener('click', () => {
                     isCutTriggered = false;
-                    foilPack.classList.remove('animate-cut');
-                    revealedCard.classList.remove('revealed');
+                    foilPack.classList.remove('animate-cut-vertical', 'animate-cut-horizontal');
+                    // Mudança: Resetar estado de todas as 3 cartas
+                    revealedCards.forEach((card, index) => {
+                        card.classList.remove('revealed');
+                        card.style.transition = ''; // Limpa a transição do clique
+                        card.style.transform = ''; // Volta ao transform do CSS original
+                        card.style.opacity = '';
+                        card.style.pointerEvents = '';
+                        
+                        // Restaura a ordem da pilha
+                        card.setAttribute('data-stack', 2 - index);
+                        
+                        // Restaura o filtro da imagem (sombra)
+                        const img = card.querySelector('.card-image');
+                        if(img) {
+                            img.style.filter = '';
+                            img.style.transition = '';
+                        }
+                    });
+                    
                     actionContainer.classList.remove('fade-in');
                     setTimeout(() => {
                         actionContainer.style.display = 'none';

@@ -1,0 +1,94 @@
+/* Efeito de Carta Holográfica (Pokemon Style) */
+/* Aplique a classe .metal-card em um container em volta da sua imagem card.webp */
+/* Exemplo de uso HTML:
+   <div class="metal-card">
+       <img src="card.webp" alt="Card Metalizado">
+   </div>
+*/
+
+.metal-card {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transform-style: preserve-3d;
+}
+
+.metal-card img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  z-index: 1;
+}
+
+/* Efeito Holográfico (Foil - Arco-íris Metálico) */
+.metal-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  
+  /* MUDANÇA: Usa a imagem como máscara para que o efeito não preencha o DIV retangular inteiro */
+  -webkit-mask-image: url('../template/card.webp');
+  mask-image: url('../template/card.webp');
+  -webkit-mask-size: contain;
+  mask-size: contain;
+  -webkit-mask-position: center;
+  mask-position: center;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+
+  background: linear-gradient(
+    115deg,
+    transparent 20%,
+    rgba(255, 0, 84, 0.4) 25%,
+    rgba(255, 204, 0, 0.4) 30%,
+    transparent 35%,
+    transparent 45%,
+    rgba(0, 212, 255, 0.4) 50%,
+    rgba(105, 0, 255, 0.4) 55%,
+    transparent 60%,
+    transparent 70%,
+    rgba(0, 255, 68, 0.4) 75%,
+    rgba(255, 255, 255, 0.6) 80%,
+    transparent 85%
+  );
+  background-size: 300% 300%;
+  /* MUDANÇA: Reage instantaneamente ao movimento do mouse com as variáveis do wrapper */
+  background-position: calc(50% + var(--mouse-x, 0) * 150%) calc(50% + var(--mouse-y, 0) * 150%);
+  mix-blend-mode: color-dodge;
+  opacity: 0.8; /* Efeito visível por padrão */
+  pointer-events: none;
+}
+
+/* Efeito de Brilho (Glare - Reflexo da Luz) */
+.metal-card::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  
+  /* Máscara aplicada ao brilho também */
+  -webkit-mask-image: url('../template/card.webp');
+  mask-image: url('../template/card.webp');
+  -webkit-mask-size: contain;
+  mask-size: contain;
+  -webkit-mask-position: center;
+  mask-position: center;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+
+  background: linear-gradient(
+    105deg,
+    transparent 20%,
+    rgba(255, 255, 255, 0.8) 25%,
+    rgba(255, 255, 255, 0.2) 30%,
+    transparent 35%
+  );
+  background-size: 300% 300%;
+  /* O reflexo se move na direção oposta ao holograma para criar contraste */
+  background-position: calc(50% + var(--mouse-x, 0) * -200%) calc(50% + var(--mouse-y, 0) * -200%);
+  mix-blend-mode: overlay;
+  opacity: 0.7;
+  pointer-events: none;
+}
